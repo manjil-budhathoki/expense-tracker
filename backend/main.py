@@ -1,17 +1,24 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
-
-from src.core.database import engine, Base
-from src.models import model  # noqa: F401 — registers ExpenseModel with Base
-from src.api.v1.endpoints.api import router as expenses_router
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
+from src.core.database import engine, Base, SessionLocal
+from src.models import model  # noqa: F401 — registers all models with Base
+from src.models.model import CategoryModel
+from src.api import router as api_router
 
 
-app = FastAPI(title="Expense Tracker", lifespan=lifespan)
-app.include_router(expenses_router)
+Base.metadata.create_all(bind=engine)
+
+
+def seed_categories():
+    db = SessionLocal()
+    if db.query(CategoryModel).count() == 0:
+        defaults = ["Food", "Entertainment", "Utilities", "Transport", "Shopping", "Health", "Rent", "Salary", "Savings"]
+        for name in defaults:
+            db.add(CategoryModel(name=name))
+        db.commit()
+    db.close()
+
+
+seed_categories()
+
+app = FastAPI(title="Expense Tracker")
+app.include_router(api_router)
