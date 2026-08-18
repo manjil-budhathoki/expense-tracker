@@ -4,53 +4,13 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.egg-info/
-*.egg
-
-# Virtual environment
 venv/
-env/
-ENV/
-.venv/
-
-# Environment variables / secrets
 .env
-.env.*
-!.env.example
-
-# Docker
 postgres_data/
 *.pid
-
-# IDE / editor
 .vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Logs
 *.log
 logs/
-
-# Testing / coverage
 .pytest_cache/
-.coverage
-htmlcov/
-
-# Distribution / packaging
 build/
 dist/
-*.egg-info/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# mypy / type checking
-.mypy_cache/
-.dmypy.json
-dmypy.json
