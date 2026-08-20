@@ -12,8 +12,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from datetime import datetime
 
-# Single source of truth for the brand color used across xlsx + pdf.
-BRAND_COLOR = "4338CA"  # no leading '#' — openpyxl wants it bare, reportlab adds it back
+BRAND_COLOR = "4338CA"
 BRAND_COLOR_HEX = f"#{BRAND_COLOR}"
 
 
