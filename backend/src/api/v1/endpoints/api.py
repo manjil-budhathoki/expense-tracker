@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+import datetime
 from src.core.database import get_db
-from src.schemas.schema import Expense, ExpenseCreate, ExpenseUpdate,TransactionType, PaginatedExpenses
+from src.schemas.schema import Expense, ExpenseCreate, ExpenseUpdate,TransactionType, PaginatedExpenses,SummaryResponse
 from src.services import services
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
@@ -12,6 +12,26 @@ router = APIRouter(prefix="/expenses", tags=["expenses"])
 def create_expense(expense: ExpenseCreate, db: Session = Depends(get_db)):
     return services.create_expense(db, expense)
 
+@router.get("/", response_model=PaginatedExpenses)
+def list_expenses(
+    skip: int = 0,
+    limit: int = 100,
+    category_id: int | None = None,
+    type: TransactionType | None = None,
+    start_date: datetime.date | None = None,
+    end_date: datetime.date | None = None,
+    db: Session = Depends(get_db),
+):
+    total, items = services.get_expenses(db, skip, limit, category_id, type, start_date, end_date)
+    return PaginatedExpenses(total=total, skip=skip, limit=limit, items=items)
+
+@router.get("/summary", response_model=SummaryResponse)
+def get_summary(
+    start_date: datetime.date | None = None,
+    end_date: datetime.date | None = None,
+    db: Session = Depends(get_db),
+):
+    return services.get_summary(db, start_date, end_date)
 
 @router.get("/", response_model=list[Expense])
 def list_expenses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -40,14 +60,3 @@ def delete_expense(expense_id: int, db: Session = Depends(get_db)):
     if not result:
         raise HTTPException(status_code=404, detail="Expense not found")
     return {"detail": "Deleted successfully"}
-
-@router.get("/", response_model=PaginatedExpenses)
-def list_expenses(
-    skip: int = 0,
-    limit: int = 100,
-    category: str | None = None,
-    type: TransactionType | None = None,
-    db: Session = Depends(get_db),
-):
-    total, items = services.get_expenses(db, skip, limit, category, type)
-    return PaginatedExpenses(total=total, skip=skip, limit=limit, items=items)

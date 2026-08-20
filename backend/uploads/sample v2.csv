@@ -1,0 +1,13 @@
+Date,Category,Type,Payment Method,Amount,Note
+2026-08-01,Rent,expense,Nabil bank,15000,August rent
+2026-08-02,Food,expense,E-sewa,450,Groceries
+2026-08-03,Salary,saving,NIMB Bank,40000,Monthly salary
+2026-08-04,Transport,expense,Cash,150,Bus fare
+2026-08-05,Food,expense,cash,280,Lunch with friends
+2026-08-06,Entertainment,expense,e-sewa,600,Movie tickets
+2026-08-07,Utilities,expense,nimb bank,1200,Electricity bill
+2026-08-08,Shopping,expense,Card,2200,New shoes
+2026-08-10,Savings,saving,nabil bank,5000,Monthly savings deposit
+2026-08-12,Health,expense,CASH,800,Pharmacy
+2026-08-14,Food,expense,E-SEWA,320,Dinner
+2026-08-15,Transport,expense,card,200,Taxi

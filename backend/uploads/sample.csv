@@ -1,0 +1,13 @@
+Date,Category,Type,Payment Method,Amount,Note
+2026-08-01,Rent,expense,bank,15000,August rent
+2026-08-02,Food,expense,esewa,450,Groceries
+2026-08-03,Salary,saving,bank,40000,Monthly salary
+2026-08-04,Transport,expense,cash,150,Bus fare
+2026-08-05,Food,expense,cash,280,Lunch with friends
+2026-08-06,Entertainment,expense,esewa,600,Movie tickets
+2026-08-07,Utilities,expense,bank,1200,Electricity bill
+2026-08-08,Shopping,expense,esewa,2200,New shoes
+2026-08-10,Savings,saving,bank,5000,Monthly savings deposit
+2026-08-12,Health,expense,cash,800,Pharmacy
+2026-08-14,Food,expense,esewa,320,Dinner
+2026-08-15,Transport,expense,khalti,200,Taxi

@@ -8,6 +8,12 @@ class TransactionType(str, Enum):
     expense = "expense"
     saving = "saving"
 
+class PaymentMethod(str, Enum):
+    cash = "Cash"
+    nabil_bank = "Nabil bank"
+    nimb_bank = "NIMB Bank"
+    card = "Card"
+    esewa ="E-sewa"
 
 class CategoryBase(BaseModel):
     name: str = Field(..., min_length=1)
@@ -20,12 +26,12 @@ class Category(CategoryBase):
     class Config:
         from_attributes = True
 
-
 class ExpenseBase(BaseModel):
     amount: float = Field(..., gt=0)
     category_id: int
     type: TransactionType = TransactionType.expense
     note: Optional[str] = None
+    payment_method: PaymentMethod = PaymentMethod.cash
     date: datetime.date = Field(default_factory=datetime.date.today)
 
 class ExpenseCreate(ExpenseBase):
@@ -35,6 +41,7 @@ class ExpenseUpdate(BaseModel):
     amount: Optional[float] = Field(default=None, gt=0)
     category_id: Optional[int] = None
     type: Optional[TransactionType] = None
+    payment_method: Optional[PaymentMethod] = None
     note: Optional[str] = None
     date: Optional[datetime.date] = None
 
@@ -48,3 +55,15 @@ class PaginatedExpenses(BaseModel):
     skip: int
     limit: int
     items: list[Expense]
+
+class CategorySummary(BaseModel):
+    category_id: int
+    category_name: str
+    type: TransactionType
+    total: float
+
+class SummaryResponse(BaseModel):
+    total_expense: float
+    total_saving: float
+    net: float
+    by_category: list[CategorySummary]
