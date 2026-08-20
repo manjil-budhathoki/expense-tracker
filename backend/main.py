@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from src.core.database import engine, Base, SessionLocal
-from src.models import model  # noqa: F401 — registers all models with Base
+from src.models import model
 from src.models.model import CategoryModel
 from src.api import router as api_router
 
