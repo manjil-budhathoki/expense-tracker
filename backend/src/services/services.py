@@ -159,3 +159,11 @@ def _resolve_payment_method(raw: str) -> PaymentMethod:
         valid = ", ".join(m.value for m in PaymentMethod)
         raise ValueError(f"'{raw}' is not a valid Payment Method. Valid options: {valid}")
     return _PAYMENT_METHOD_LOOKUP[key]
+
+def get_all_expenses_for_export(db: Session):
+    return (
+        db.query(ExpenseModel)
+        .join(CategoryModel, ExpenseModel.category_id == CategoryModel.id)
+        .order_by(ExpenseModel.date)
+        .all()
+    )
