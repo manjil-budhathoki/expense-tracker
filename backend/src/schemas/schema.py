@@ -67,3 +67,8 @@ class SummaryResponse(BaseModel):
     total_saving: float
     net: float
     by_category: list[CategorySummary]
+
+class ExportFormat(str, Enum):
+    csv = "csv"
+    xlsx = "xlsx"
+    pdf = "pdf"
