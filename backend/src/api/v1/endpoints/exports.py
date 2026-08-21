@@ -8,9 +8,6 @@ from src.schemas.schema import ExportFormat
 
 router = APIRouter(prefix="/export", tags=["export"])
 
-
-
-
 _EXPORTERS = {
     ExportFormat.csv: (export_service.export_csv, "text/csv"),
     ExportFormat.xlsx: (
@@ -22,7 +19,6 @@ _EXPORTERS = {
         "application/pdf",
     ),
 }
-
 
 @router.get("")
 def export_expenses(

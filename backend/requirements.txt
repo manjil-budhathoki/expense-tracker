@@ -6,3 +6,5 @@ pydantic
 python-dotenv
 openpyxl
 reportlab
+passlib[bcrypt]
+python-jose[cryptography]

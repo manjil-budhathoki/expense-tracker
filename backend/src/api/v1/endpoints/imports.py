@@ -7,7 +7,6 @@ from src.services import import_service
 
 router = APIRouter(prefix="/import", tags=["import"])
 
-
 @router.post("/")
 def import_file(
     name: str = Form(...),
@@ -25,7 +24,6 @@ def import_file(
         "created": created,
         "errors": errors,
     }
-
 
 @router.get("/")
 def list_imports(db: Session = Depends(get_db)):

@@ -12,7 +12,6 @@ from src.schemas.schema import TransactionType, PaymentMethod
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-
 def _get_or_create_category(db: Session, name: str) -> int:
     name = name.strip()
     category = db.query(CategoryModel).filter(CategoryModel.name == name).first()
@@ -24,7 +23,6 @@ def _get_or_create_category(db: Session, name: str) -> int:
     db.refresh(category)
     return category.id
 
-
 def _parse_row(db: Session, row: dict):
     return ExpenseModel(
         date=datetime.date.fromisoformat(str(row["Date"])),
@@ -35,11 +33,9 @@ def _parse_row(db: Session, row: dict):
         note=row.get("Note") or None,
     )
 
-
 def _parse_csv_rows(file_bytes: bytes):
     text = file_bytes.decode("utf-8")
     return list(csv.DictReader(io.StringIO(text)))
-
 
 def _parse_xlsx_rows(file_bytes: bytes):
     wb = load_workbook(io.BytesIO(file_bytes))
@@ -52,7 +48,6 @@ def _parse_xlsx_rows(file_bytes: bytes):
             row["Date"] = row["Date"].isoformat()
         rows.append(row)
     return rows
-
 
 def create_import(db: Session, name: str, file, file_format: str):
     existing = db.query(ImportFileModel).filter(ImportFileModel.name == name).first()

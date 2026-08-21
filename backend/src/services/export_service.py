@@ -24,7 +24,6 @@ def export_csv(header, rows) -> io.StringIO:
     buffer.seek(0)
     return buffer
 
-
 def export_xlsx(header, rows) -> io.BytesIO:
     wb = Workbook()
     ws = wb.active
@@ -35,7 +34,6 @@ def export_xlsx(header, rows) -> io.BytesIO:
     wb.save(buffer)
     buffer.seek(0)
     return buffer
-
 
 def export_pdf(title, header, rows) -> io.BytesIO:
     buffer = io.BytesIO()

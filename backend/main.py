@@ -15,7 +15,6 @@ def seed_categories():
         db.commit()
     db.close()
 
-
 seed_categories()
 
 app = FastAPI(title="Expense Tracker")
