@@ -4,6 +4,7 @@ import datetime
 from src.core.database import get_db
 from src.schemas.schema import Expense, ExpenseCreate, ExpenseUpdate,TransactionType, PaginatedExpenses,SummaryResponse
 from src.services import services
+from src.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
 
@@ -34,7 +35,7 @@ def get_summary(
     return services.get_summary(db, start_date, end_date)
 
 @router.get("/", response_model=list[Expense])
-def list_expenses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_expenses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db),current_user = Depends(get_current_user)):
     return services.get_expenses(db, skip, limit)
 
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, EmailStr
 import datetime
 from enum import Enum
 from typing import Optional
@@ -91,3 +91,19 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+# schemas/schema.py
+class InviteCreate(BaseModel):
+    email: EmailStr
+    can_add_expense: bool = True
+    can_edit_expense: bool = False
+    can_delete_expense: bool = False
+    can_export: bool = False
+    can_import: bool = False
+    can_manage_categories: bool = False
+    can_invite_users: bool = False
+
+
+class InviteAccept(BaseModel):
+    username: str = Field(..., min_length=3)
+    password: str = Field(..., min_length=8)

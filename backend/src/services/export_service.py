@@ -15,7 +15,6 @@ def _rows_for_table(expenses):
     ]
     return header, rows
 
-
 def export_csv(header, rows) -> io.StringIO:
     buffer = io.StringIO()
     writer = csv.writer(buffer)

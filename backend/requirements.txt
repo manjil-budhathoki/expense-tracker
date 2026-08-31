@@ -6,5 +6,6 @@ pydantic
 python-dotenv
 openpyxl
 reportlab
-passlib[bcrypt]
+argon2-cffi
 python-jose[cryptography]
+fastapi-mail
