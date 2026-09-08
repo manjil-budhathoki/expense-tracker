@@ -17,7 +17,14 @@ class ExpenseModel(Base):
     amount = Column(Float, nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     type = Column(SqlEnum(TransactionType), nullable=False, default=TransactionType.expense)
-    payment_method = Column(SqlEnum(PaymentMethod), nullable=False, default=PaymentMethod.cash)
+    payment_method = Column(
+        SqlEnum(
+            PaymentMethod,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls]
+        ),
+        nullable=False,
+        default=PaymentMethod.cash
+    )
     note = Column(String, nullable=True)
     date = Column(Date, nullable=False)
 

@@ -1,0 +1,121 @@
+{
+  "defaultSalary": 80000,
+  "defaultAllocationPercent": 25,
+  "initialExpenses": [
+    {
+      "id": 1,
+      "product": "Ergonomic Desk Chair",
+      "category": "Workplace",
+      "amount": 18500,
+      "date": "2025-05-10"
+    },
+    {
+      "id": 2,
+      "product": "Mechanical Keyboard (Keychron)",
+      "category": "Tech",
+      "amount": 12000,
+      "date": "2025-05-12"
+    },
+    {
+      "id": 3,
+      "product": "Monthly Groceries (Bhatbhateni)",
+      "category": "Groceries",
+      "amount": 14500,
+      "date": "2025-05-14"
+    }
+  ],
+  "initialWishlistPots": [
+    {
+      "id": 1,
+      "name": "MacBook Air M3",
+      "targetAmount": 175000,
+      "currentSaved": 52000,
+      "monthlyPledge": 15000
+    },
+    {
+      "id": 2,
+      "name": "Sony A7 IV Camera",
+      "targetAmount": 280000,
+      "currentSaved": 40000,
+      "monthlyPledge": 12000
+    },
+    {
+      "id": 3,
+      "name": "Pokhara Weekend Tour",
+      "targetAmount": 40000,
+      "currentSaved": 28000,
+      "monthlyPledge": 6000
+    }
+  ],
+  "initialLongTermGoals": [
+    { "id": "lt-1", "name": "Electric Car (BYD Atto 3)", "cost": 5600000 },
+    { "id": "lt-2", "name": "Plot of Land (Pokhara / Chitwan)", "cost": 9500000 },
+    { "id": "lt-3", "name": "Dream Farmhouse Construction", "cost": 18000000 }
+  ],
+  "defaultRentConfig": {
+    "baseRent": 18000,
+    "electricityRate": 13,
+    "waterWasteFee": 500
+  },
+  "initialRentHistory": [
+    {
+      "id": 1,
+      "month": "Chaitra (चैत) 2081",
+      "baseRent": 18000,
+      "prevReading": 1420,
+      "currReading": 1495,
+      "units": 75,
+      "electricityBill": 975,
+      "waterWasteFee": 500,
+      "totalAmount": 19475,
+      "paidDate": "2025-04-02"
+    },
+    {
+      "id": 2,
+      "month": "Falgun (फागुन) 2081",
+      "baseRent": 18000,
+      "prevReading": 1340,
+      "currReading": 1420,
+      "units": 80,
+      "electricityBill": 1040,
+      "waterWasteFee": 500,
+      "totalAmount": 19540,
+      "paidDate": "2025-03-03"
+    }
+  ],
+  "nepaliMonths": [
+    { "bs": "Baisakh (बैशाख)", "en": "Apr / May", "index": 1 },
+    { "bs": "Jestha (जेठ)", "en": "May / Jun", "index": 2 },
+    { "bs": "Ashadh (असार)", "en": "Jun / Jul", "index": 3 },
+    { "bs": "Shrawan (श्रावण)", "en": "Jul / Aug", "index": 4 },
+    { "bs": "Bhadra (भाद्र)", "en": "Aug / Sep", "index": 5 },
+    { "bs": "Ashwin (असोज)", "en": "Sep / Oct", "index": 6 },
+    { "bs": "Kartik (कार्तिक)", "en": "Oct / Nov", "index": 7 },
+    { "bs": "Mangsir (मंसिर)", "en": "Nov / Dec", "index": 8 },
+    { "bs": "Poush (पुष)", "en": "Dec / Jan", "index": 9 },
+    { "bs": "Magh (माघ)", "en": "Jan / Feb", "index": 10 },
+    { "bs": "Falgun (फागुन)", "en": "Feb / Mar", "index": 11 },
+    { "bs": "Chaitra (चैत)", "en": "Mar / Apr", "index": 12 }
+  ],
+  "nepaliDays": [
+    "Aaitabar (आइतबार)",
+    "Sombar (सोमबार)",
+    "Mangelbar (मंगलबार)",
+    "Budhabar (बुधबार)",
+    "Bihibar (बिहिबार)",
+    "Shukrabar (शुक्रबार)",
+    "Sanibar (शनिबार)"
+  ],
+  "formDefaults": {
+    "expenseCategory": "Tech",
+    "monthlyPledge": "5000"
+  },
+  "sliderBounds": {
+    "allocation": { "min": 5, "max": 50, "step": 5 },
+    "longTermSalary": { "min": 50000, "max": 1000000, "step": 25000 }
+  },
+  "bsYearOptions": ["2081", "2082", "2083"],
+  "defaultSelectedMonth": "Baisakh (बैशाख)",
+  "defaultSelectedYear": "2082",
+  "rentHistoryFallbackPrevReading": 1495
+}

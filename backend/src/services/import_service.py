@@ -30,7 +30,7 @@ def _parse_row(db: Session, row: dict):
         date=datetime.date.fromisoformat(str(row["Date"])),
         category_id=_get_or_create_category(db, row["Category"]),
         type=TransactionType(str(row["Type"]).strip().lower()),
-        payment_method=_resolve_payment_method(row["Payment Method"]),
+        payment_method=_resolve_payment_method(row["Payment Method"]).value,
         amount=float(row["Amount"]),
         note=row.get("Note") or None,
     )

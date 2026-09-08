@@ -1,12 +1,21 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual environment
 venv/
-
-# Environment variables / secrets
 .env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # Uploaded / generated files
 uploads/

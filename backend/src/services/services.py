@@ -4,9 +4,22 @@ from src.schemas.schema import ExpenseCreate, ExpenseUpdate, Optional, CategoryC
 import datetime
 from sqlalchemy import func
 
+_PAYMENT_METHOD_LOOKUP = {member.value.strip().lower(): member.value for member in PaymentMethod}
+
+def _normalize_payment_method(value):
+    if isinstance(value, PaymentMethod):
+        return value.value
+    if isinstance(value, str):
+        key = value.strip().lower()
+        if key in _PAYMENT_METHOD_LOOKUP:
+            return _PAYMENT_METHOD_LOOKUP[key]
+    return value
+
 
 def create_expense(db: Session, expense: ExpenseCreate):
-    db_expense = ExpenseModel(**expense.model_dump())
+    data = expense.model_dump()
+    data["payment_method"] = _normalize_payment_method(data.get("payment_method"))
+    db_expense = ExpenseModel(**data)
     db.add(db_expense)
     db.commit()
     db.refresh(db_expense)
@@ -62,7 +75,10 @@ def update_expense(db: Session, expense_id: int, expense: ExpenseUpdate):
     db_expense = get_expense(db, expense_id)
     if not db_expense:
         return None
-    for key, value in expense.model_dump(exclude_unset=True).items():
+    updates = expense.model_dump(exclude_unset=True)
+    if "payment_method" in updates and isinstance(updates["payment_method"], PaymentMethod):
+        updates["payment_method"] = updates["payment_method"].value
+    for key, value in updates.items():
         setattr(db_expense, key, value)
     db.commit()
     db.refresh(db_expense)
