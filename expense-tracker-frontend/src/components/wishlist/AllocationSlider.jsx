@@ -1,4 +1,3 @@
-import React from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { formatNPR } from '../../utils/currency';
 import mockData from '../../data/mockData.json';

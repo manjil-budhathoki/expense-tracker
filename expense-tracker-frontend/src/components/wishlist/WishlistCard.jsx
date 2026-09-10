@@ -1,4 +1,3 @@
-import React from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { calculateGoalProjections } from '../../utils/calculations';
 import { formatNPR } from '../../utils/currency';

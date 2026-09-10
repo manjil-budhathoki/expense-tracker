@@ -1,4 +1,3 @@
-import React from 'react';
 import WishlistPotCard from '../components/wishlist/WishlistPotCard';
 import WishlistPotForm from '../components/wishlist/WishlistPotForm';
 import LongTermSimulator from '../components/wishlist/LongTermSimulator';
@@ -26,6 +25,7 @@ export default function WishlistPage() {
             <WishlistPotForm />
           </div>
           <div className="md:col-span-2 space-y-4">
+            {wishlistPots.length === 0 && <div className="panel empty-state">What are you saving for? Create a pot to start tracking your progress.</div>}
             {wishlistPots.map((pot) => (
               <WishlistPotCard key={pot.id} pot={pot} />
             ))}

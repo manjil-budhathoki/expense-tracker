@@ -1,24 +1,25 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import mockData from '../../data/mockData.json';
 import { Target } from 'lucide-react';
 
 export default function WishlistPotForm() {
-  const { addWishlistPot } = useFinance();
+  const { addWishlistPot, saving } = useFinance();
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [initialDeposit, setInitialDeposit] = useState('');
   const [monthlyPledge, setMonthlyPledge] = useState(mockData.formDefaults.monthlyPledge);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !targetAmount) return;
-    addWishlistPot({
+    const ok = await addWishlistPot({
       name,
       targetAmount: parseFloat(targetAmount),
       currentSaved: parseFloat(initialDeposit) || 0,
-      monthlyPledge: parseFloat(monthlyPledge) || 3000,
+      monthlyPledge: Number(monthlyPledge),
     });
+    if (!ok) return;
     setName('');
     setTargetAmount('');
     setInitialDeposit('');
@@ -34,8 +35,8 @@ export default function WishlistPotForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-xs font-medium text-zinc-500 block mb-2">Item Name</label>
-          <input
+          <label htmlFor="wishlistpotform-1" className="text-xs font-medium text-zinc-500 block mb-2">Item Name</label>
+          <input id="wishlistpotform-1"
             type="text"
             required
             placeholder="e.g. Sony WH-1000XM5"
@@ -46,11 +47,11 @@ export default function WishlistPotForm() {
         </div>
 
         <div>
-          <label className="text-xs font-medium text-zinc-500 block mb-2">Target Cost (NPR)</label>
+          <label htmlFor="wishlistpotform-2" className="text-xs font-medium text-zinc-500 block mb-2">Target Cost (NPR)</label>
           <div className="relative">
             <span className="absolute left-4 top-3 text-xs text-zinc-400 font-semibold">Rs.</span>
-            <input
-              type="number"
+            <input id="wishlistpotform-2"
+              type="number" min="0.01" step="0.01"
               required
               placeholder="45000"
               value={targetAmount}
@@ -62,11 +63,11 @@ export default function WishlistPotForm() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-zinc-500 block mb-2">Initial Deposit</label>
+            <label htmlFor="wishlistpotform-3" className="text-xs font-medium text-zinc-500 block mb-2">Initial Deposit</label>
             <div className="relative">
               <span className="absolute left-3.5 top-3 text-xs text-zinc-400 font-semibold">Rs.</span>
-              <input
-                type="number"
+              <input id="wishlistpotform-3"
+                type="number" min="0" step="0.01"
                 placeholder="0"
                 value={initialDeposit}
                 onChange={(e) => setInitialDeposit(e.target.value)}
@@ -76,11 +77,11 @@ export default function WishlistPotForm() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-zinc-500 block mb-2">Monthly Contribution</label>
+            <label htmlFor="wishlistpotform-4" className="text-xs font-medium text-zinc-500 block mb-2">Monthly Contribution</label>
             <div className="relative">
               <span className="absolute left-3.5 top-3 text-xs text-zinc-400 font-semibold">Rs.</span>
-              <input
-                type="number"
+              <input id="wishlistpotform-4"
+                type="number" min="0" step="0.01"
                 placeholder="5000"
                 value={monthlyPledge}
                 onChange={(e) => setMonthlyPledge(e.target.value)}
@@ -92,6 +93,7 @@ export default function WishlistPotForm() {
 
         <button
           type="submit"
+          disabled={saving}
           className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 rounded-xl text-sm transition mt-2 cursor-pointer"
         >
           Create Pot

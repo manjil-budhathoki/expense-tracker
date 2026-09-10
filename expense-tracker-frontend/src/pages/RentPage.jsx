@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { formatNPR } from '../utils/currency';
 import { NEPALI_MONTHS } from '../utils/nepaliDate';
@@ -6,7 +6,7 @@ import mockData from '../data/mockData.json';
 import { Zap, Home, History, CheckCircle2, Sliders, Calendar } from 'lucide-react';
 
 export default function RentPage() {
-  const { rentConfig, updateRentConfig, rentHistory, recordRentPayment } = useFinance();
+  const { rentConfig, updateRentConfig, rentHistory, recordRentPayment, saving } = useFinance();
 
   // Settings State
   const [baseRentInput, setBaseRentInput] = useState(rentConfig.baseRent);
@@ -16,10 +16,10 @@ export default function RentPage() {
 
   // Month Dropdown State
   const [selectedMonth, setSelectedMonth] = useState(mockData.defaultSelectedMonth);
-  const [selectedYear, setSelectedYear] = useState(mockData.defaultSelectedYear);
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear() + 57));
 
   const [prevReading, setPrevReading] = useState(
-    rentHistory.length > 0 ? rentHistory[0].currReading : mockData.rentHistoryFallbackPrevReading
+    rentHistory.length > 0 ? rentHistory[0].currReading : 0
   );
   const [currReading, setCurrReading] = useState('');
 
@@ -28,25 +28,26 @@ export default function RentPage() {
   const electricityTotal = unitsConsumed * rentConfig.electricityRate;
   const grandTotalDue = rentConfig.baseRent + electricityTotal + rentConfig.waterWasteFee;
 
-  const handleSaveConfig = (e) => {
+  const handleSaveConfig = async (e) => {
     e.preventDefault();
-    updateRentConfig({
+    const ok = await updateRentConfig({
       baseRent: Number(baseRentInput),
       electricityRate: Number(rateInput),
       waterWasteFee: Number(waterWasteInput),
     });
+    if (!ok) return;
     setIsConfigSaved(true);
     setTimeout(() => setIsConfigSaved(false), 2000);
   };
 
-  const handleRecordMonth = (e) => {
+  const handleRecordMonth = async (e) => {
     e.preventDefault();
     if (!currReading || Number(currReading) < Number(prevReading)) {
       alert('Current meter reading must be greater than or equal to previous reading.');
       return;
     }
 
-    recordRentPayment({
+    const ok = await recordRentPayment({
       month: `${selectedMonth} ${selectedYear}`,
       baseRent: rentConfig.baseRent,
       prevReading: Number(prevReading),
@@ -57,6 +58,7 @@ export default function RentPage() {
       totalAmount: grandTotalDue,
     });
 
+    if (!ok) return;
     setPrevReading(Number(currReading));
     setCurrReading('');
   };
@@ -103,8 +105,8 @@ export default function RentPage() {
               {/* Dropdown for Nepali Month & Year */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
-                  <label className="text-xs font-medium text-zinc-500 block mb-1.5">Nepali Month</label>
-                  <select
+                  <label htmlFor="rentpage-1" className="text-xs font-medium text-zinc-500 block mb-1.5">Nepali Month</label>
+                  <select id="rentpage-1"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                     className="w-full bg-zinc-50 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:bg-zinc-100 font-semibold text-zinc-800"
@@ -118,13 +120,13 @@ export default function RentPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 block mb-1.5">BS Year</label>
-                  <select
+                  <label htmlFor="rentpage-2" className="text-xs font-medium text-zinc-500 block mb-1.5">BS Year</label>
+                  <select id="rentpage-2"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
                     className="w-full bg-zinc-50 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:bg-zinc-100 font-semibold text-zinc-800"
                   >
-                    {mockData.bsYearOptions.map((year) => (
+                    {Array.from({length: 7}, (_, i) => String(new Date().getFullYear() + 54 + i)).map((year) => (
                       <option key={year} value={year}>
                         {year}
                       </option>
@@ -136,19 +138,18 @@ export default function RentPage() {
               {/* Meter Readings */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 block mb-1.5">Previous Reading</label>
-                  <input
-                    type="number"
+                  <label htmlFor="rentpage-3" className="text-xs font-medium text-zinc-500 block mb-1.5">Previous Reading</label>
+                  <input id="rentpage-3"
+                    type="number" required min="0" step="0.01"
                     value={prevReading}
                     onChange={(e) => setPrevReading(e.target.value)}
                     className="w-full bg-zinc-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:bg-zinc-100 font-medium text-zinc-800"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 block mb-1.5">Current Reading</label>
-                  <input
-                    type="number"
-                    required
+                  <label htmlFor="rentpage-4" className="text-xs font-medium text-zinc-500 block mb-1.5">Current Reading</label>
+                  <input id="rentpage-4"
+                    type="number" required min="0" step="0.01"
                     placeholder="e.g. 1580"
                     value={currReading}
                     onChange={(e) => setCurrReading(e.target.value)}
@@ -178,7 +179,7 @@ export default function RentPage() {
               </div>
 
               <button
-                type="submit"
+                type="submit" disabled={saving}
                 className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 rounded-xl text-sm transition cursor-pointer flex items-center justify-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4" /> Save {selectedMonth} Rent
@@ -197,9 +198,9 @@ export default function RentPage() {
 
             <form onSubmit={handleSaveConfig} className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-zinc-500 block mb-1">Fixed Monthly Rent (NPR)</label>
-                <input
-                  type="number"
+                <label htmlFor="rentpage-5" className="text-xs font-medium text-zinc-500 block mb-1">Fixed Monthly Rent (NPR)</label>
+                <input id="rentpage-5"
+                  type="number" required min="0" step="0.01"
                   value={baseRentInput}
                   onChange={(e) => setBaseRentInput(e.target.value)}
                   className="w-full bg-zinc-50 rounded-xl px-4 py-2 text-sm focus:outline-none focus:bg-zinc-100 font-medium"
@@ -208,18 +209,18 @@ export default function RentPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 block mb-1">Rs. per Unit</label>
-                  <input
-                    type="number"
+                  <label htmlFor="rentpage-6" className="text-xs font-medium text-zinc-500 block mb-1">Rs. per Unit</label>
+                  <input id="rentpage-6"
+                    type="number" required min="0" step="0.01"
                     value={rateInput}
                     onChange={(e) => setRateInput(e.target.value)}
                     className="w-full bg-zinc-50 rounded-xl px-4 py-2 text-sm focus:outline-none focus:bg-zinc-100 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-zinc-500 block mb-1">Water / Waste (Rs.)</label>
-                  <input
-                    type="number"
+                  <label htmlFor="rentpage-7" className="text-xs font-medium text-zinc-500 block mb-1">Water / Waste (Rs.)</label>
+                  <input id="rentpage-7"
+                    type="number" required min="0" step="0.01"
                     value={waterWasteInput}
                     onChange={(e) => setWaterWasteInput(e.target.value)}
                     className="w-full bg-zinc-50 rounded-xl px-4 py-2 text-sm focus:outline-none focus:bg-zinc-100 font-medium"
@@ -228,7 +229,7 @@ export default function RentPage() {
               </div>
 
               <button
-                type="submit"
+                type="submit" disabled={saving}
                 className="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium py-2 rounded-xl text-xs transition cursor-pointer"
               >
                 Update Default Rates
@@ -248,6 +249,7 @@ export default function RentPage() {
           </div>
 
           <div className="space-y-3">
+            {rentHistory.length === 0 && <p className="empty-state">No rent payments recorded yet.</p>}
             {rentHistory.map((item) => (
               <div key={item.id} className="bg-zinc-50/70 p-5 rounded-2xl space-y-3">
                 <div className="flex justify-between items-start">

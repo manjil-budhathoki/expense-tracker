@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 import datetime
 from src.core.database import get_db
@@ -15,8 +15,8 @@ def create_expense(expense: ExpenseCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=PaginatedExpenses)
 def list_expenses(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
     category_id: int | None = None,
     type: TransactionType | None = None,
     payment_method: PaymentMethod | None = None,

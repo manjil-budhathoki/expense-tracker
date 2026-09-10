@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ConfigDict
 import datetime
 from enum import Enum
 from typing import Optional
@@ -16,18 +16,18 @@ class PaymentMethod(str, Enum):
     esewa ="E-sewa"
 
 class CategoryBase(BaseModel):
-    name: str = Field(..., min_length=1)
+    model_config = ConfigDict(str_strip_whitespace=True)
+    name: str = Field(..., min_length=1, max_length=100)
 
 class CategoryCreate(CategoryBase):
     pass
 
 class Category(CategoryBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ExpenseBase(BaseModel):
-    amount: float = Field(..., gt=0)
+    amount: float = Field(..., gt=0, allow_inf_nan=False)
     category_id: int
     type: TransactionType = TransactionType.expense
     note: Optional[str] = None
@@ -38,7 +38,7 @@ class ExpenseCreate(ExpenseBase):
     pass
 
 class ExpenseUpdate(BaseModel):
-    amount: Optional[float] = Field(default=None, gt=0)
+    amount: Optional[float] = Field(default=None, gt=0, allow_inf_nan=False)
     category_id: Optional[int] = None
     type: Optional[TransactionType] = None
     payment_method: Optional[PaymentMethod] = None
@@ -47,8 +47,7 @@ class ExpenseUpdate(BaseModel):
 
 class Expense(ExpenseBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PaginatedExpenses(BaseModel):
     total: int

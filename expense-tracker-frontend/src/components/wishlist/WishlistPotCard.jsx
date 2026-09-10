@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { formatNPR } from '../../utils/currency';
-import { Plus, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Plus, CheckCircle2 } from 'lucide-react';
 
 export default function WishlistPotCard({ pot }) {
-  const { depositToPot, updatePotPledge } = useFinance();
+  const { depositToPot, updatePotPledge, saving } = useFinance();
   const [depositAmount, setDepositAmount] = useState('');
   const [isEditingPledge, setIsEditingPledge] = useState(false);
   const [pledgeInput, setPledgeInput] = useState(pot.monthlyPledge || 5000);
@@ -18,16 +18,16 @@ export default function WishlistPotCard({ pot }) {
     ? (remaining / pot.monthlyPledge).toFixed(1) 
     : '∞';
 
-  const handleDeposit = (e) => {
+  const handleDeposit = async (e) => {
     e.preventDefault();
     if (!depositAmount || Number(depositAmount) <= 0) return;
-    depositToPot(pot.id, depositAmount);
+    if (!await depositToPot(pot.id, depositAmount)) return;
     setDepositAmount('');
   };
 
-  const handleSavePledge = (e) => {
+  const handleSavePledge = async (e) => {
     e.preventDefault();
-    updatePotPledge(pot.id, Number(pledgeInput));
+    if (!await updatePotPledge(pot.id, Number(pledgeInput))) return;
     setIsEditingPledge(false);
   };
 
@@ -78,20 +78,21 @@ export default function WishlistPotCard({ pot }) {
           {isEditingPledge ? (
             <form onSubmit={handleSavePledge} className="flex items-center gap-1.5 mt-1">
               <input
-                type="number"
+                type="number" min="0" step="0.01"
+                aria-label="Monthly contribution"
                 value={pledgeInput}
                 onChange={(e) => setPledgeInput(e.target.value)}
                 className="w-20 bg-white border border-zinc-300 rounded px-1.5 py-0.5 text-xs font-semibold text-zinc-800"
               />
-              <button type="submit" className="text-indigo-600 font-bold hover:underline">Save</button>
+              <button type="submit" disabled={saving} className="text-indigo-600 font-bold hover:underline">Save</button>
             </form>
           ) : (
-            <span
+            <button type="button"
               onClick={() => setIsEditingPledge(true)}
               className="font-bold text-zinc-800 cursor-pointer hover:underline"
             >
-              {formatNPR(pot.monthlyPledge || 0)}/month <span className="text-zinc-400 font-normal text-[10px]">(click to edit)</span>
-            </span>
+              {formatNPR(pot.monthlyPledge || 0)}/month <span className="text-zinc-400 font-normal text-[10px]">(edit)</span>
+            </button>
           )}
         </div>
 
@@ -109,15 +110,17 @@ export default function WishlistPotCard({ pot }) {
           <div className="relative flex-1">
             <span className="absolute left-3.5 top-2.5 text-xs font-bold text-zinc-400">Rs.</span>
             <input
-              type="number"
-              placeholder="Deposit money (e.g. 3300)"
+              type="number" min="0" step="0.01"
+              aria-label={`Deposit to ${pot.name}`}
+              max={remaining}
+              placeholder="Deposit amount"
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value)}
               className="w-full bg-zinc-50 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:bg-zinc-100 transition font-medium"
             />
           </div>
           <button
-            type="submit"
+            type="submit" disabled={saving}
             className="bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1 transition cursor-pointer shrink-0"
           >
             <Plus className="w-3.5 h-3.5" /> Add

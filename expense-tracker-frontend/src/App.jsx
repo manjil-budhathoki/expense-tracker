@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import Layout from './components/layout/Layout';

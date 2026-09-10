@@ -1,100 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useFinance } from '../../context/FinanceContext';
-import { fetchCategories } from '../../utils/expenseApi';
+import { useState } from 'react';
+import { useFinance, localDate } from '../../context/FinanceContext';
 
-export default function ExpenseForm() {
-  const { addExpense, categories } = useFinance();
-  const [product, setProduct] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [amount, setAmount] = useState('');
+export default function ExpenseForm({ expense, onDone }) {
+  const { addExpense, editExpense, categories, addCategory } = useFinance();
+  const [form, setForm] = useState(expense || { note: '', amount: '', category_id: categories[0]?.id || '', type: 'expense', payment_method: 'Cash', date: localDate() });
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (categories.length === 0) {
-      fetchCategories().then((cats) => {
-        if (cats.length > 0 && !categoryId) {
-          setCategoryId(String(cats[0].id));
-        }
-      }).catch(() => {});
-    } else if (!categoryId && categories.length > 0) {
-      setCategoryId(String(categories[0].id));
-    }
-  }, [categories, categoryId]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!product || !amount || !categoryId) return;
-    setSubmitting(true);
-    try {
-      await addExpense({
-        note: product,
-        category_id: Number(categoryId),
-        amount: parseFloat(amount),
-        date: new Date().toISOString().split('T')[0],
-      });
-      setProduct('');
-      setAmount('');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="bg-white p-7 rounded-3xl shadow-xs">
-      <h2 className="text-lg font-bold text-zinc-900 mb-1">Add Expense</h2>
-      <p className="text-xs text-zinc-400 mb-6">Track products you recently bought</p>
-      
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="text-xs font-medium text-zinc-500 block mb-2">Product Name</label>
-          <input
-            type="text"
-            required
-            placeholder="e.g. Marshall Speaker"
-            value={product}
-            onChange={(e) => setProduct(e.target.value)}
-            className="w-full bg-zinc-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-zinc-100/80 transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-medium text-zinc-500 block mb-2">Category</label>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full bg-zinc-50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-zinc-100/80 transition text-zinc-700"
-          >
-            {categories.map((cat) => (
-              <option key={cat.id} value={String(cat.id)}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-xs font-medium text-zinc-500 block mb-2">Cost (NPR)</label>
-          <div className="relative">
-            <span className="absolute left-4 top-3.5 text-xs text-zinc-400 font-semibold">Rs.</span>
-            <input
-              type="number"
-              required
-              placeholder="4500"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full bg-zinc-50 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:bg-zinc-100/80 transition"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 rounded-xl text-sm transition mt-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {submitting ? 'Saving...' : 'Save Expense'}
-        </button>
-      </form>
-    </div>
-  );
+  const [newCategory, setNewCategory] = useState('');
+  const [message, setMessage] = useState('');
+  const field = key => ({ value: form[key], onChange: e => setForm(s=>({...s,[key]:e.target.value})) });
+  async function submit(e) {
+    e.preventDefault(); setSubmitting(true); setMessage('');
+    const data = { ...form, amount: Number(form.amount), category_id: Number(form.category_id) }; delete data.id;
+    const ok = expense ? await editExpense(expense.id,data) : await addExpense(data);
+    if(ok) { setForm(s=>({...s,note:'',amount:''})); setMessage('Transaction saved.'); onDone?.(); }
+    setSubmitting(false);
+  }
+  return <section className="panel"><h2>{expense ? 'Edit transaction' : 'New transaction'}</h2><p className="text-sm text-zinc-500 mt-1 mb-6">Give every rupee a place.</p>
+    <form onSubmit={submit} className="form-stack">
+      <label>Description<input required maxLength="500" placeholder="e.g. Weekly groceries" {...field('note')}/></label>
+      <div className="form-two"><label>Amount (NPR)<input required type="number" min="0.01" step="0.01" placeholder="0.00" {...field('amount')}/></label><label>Type<select {...field('type')}><option value="expense">Expense</option><option value="saving">Saving</option></select></label></div>
+      <label>Category<select required {...field('category_id')}><option value="" disabled>Select category</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+      <label>Date<input required type="date" {...field('date')}/></label>
+      <label>Payment method<select {...field('payment_method')}>{['Cash','Nabil bank','NIMB Bank','Card','E-sewa'].map(m=><option key={m}>{m}</option>)}</select></label>
+      <button className="primary-button" disabled={submitting || !categories.length}>{submitting?'Saving…':expense?'Save changes':'Save transaction'}</button>
+      {expense && <button type="button" className="secondary-button" onClick={onDone}>Cancel editing</button>}
+      <p role="status" className="text-sm text-emerald-700">{message}</p>
+    </form>
+    {!expense && <details className="mt-5"><summary className="text-sm cursor-pointer text-zinc-600">Add a category</summary><form className="form-stack mt-3" onSubmit={async e=>{e.preventDefault();setSubmitting(true);if(await addCategory(newCategory.trim()))setNewCategory('');setSubmitting(false);}}><label>Category name<input required maxLength="100" value={newCategory} onChange={e=>setNewCategory(e.target.value)}/></label><button className="secondary-button" disabled={submitting}>Create category</button></form></details>}
+  </section>;
 }

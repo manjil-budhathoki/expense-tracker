@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 
 export default function WishlistForm() {

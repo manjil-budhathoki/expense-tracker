@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { calculateMilestoneHorizon } from '../../utils/calculations';
 import { formatNPR } from '../../utils/currency';
 import mockData from '../../data/mockData.json';
-import { Compass, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function LongTermSimulator() {
-  const { monthlySalary, allocationPercent, longTermGoals } = useFinance();
+  const { monthlySalary, allocationPercent, longTermGoals, setLongTermGoals, saving } = useFinance();
   
   // Future Projected Salary Slider state (starts at 1.5x current salary)
-  const [projectedSalary, setProjectedSalary] = useState(monthlySalary * 2);
+  const [projectedSalary, setProjectedSalary] = useState(Math.max(50000, monthlySalary * 2));
+  const [name, setName] = useState('');
+  const [cost, setCost] = useState('');
   const bounds = mockData.sliderBounds.longTermSalary;
 
   return (
@@ -38,6 +40,7 @@ export default function LongTermSimulator() {
 
         <input
           type="range"
+          aria-label="Projected monthly salary"
           min={String(bounds.min)}
           max={String(bounds.max)}
           step={String(bounds.step)}
@@ -47,12 +50,17 @@ export default function LongTermSimulator() {
         />
 
         <div className="flex justify-between text-[11px] text-zinc-400">
-          <span>Rs. {formatNPR(bounds.min)}/mo</span>
+          <span>{formatNPR(bounds.min)}/mo</span>
           <span>Dedicated to dreams ({allocationPercent}%): {formatNPR((projectedSalary * allocationPercent) / 100)}/mo</span>
-          <span>Rs. {formatNPR(bounds.max)}/mo</span>
+          <span>{formatNPR(bounds.max)}/mo</span>
         </div>
       </div>
 
+      <form className="budget-form" onSubmit={async e => { e.preventDefault(); if(await setLongTermGoals(goals => [...goals, {id: crypto.randomUUID(), name: name.trim(), cost: Number(cost)}])) {setName('');setCost('');} }}>
+        <label>Milestone name<input required maxLength="200" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. A new home"/></label>
+        <label>Target cost (NPR)<input required type="number" min="0.01" step="0.01" value={cost} onChange={e=>setCost(e.target.value)}/></label>
+        <button className="primary-button" disabled={saving}>Add milestone</button>
+      </form>
       {/* Horizon Projections for Big Goals */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {longTermGoals.map((goal) => {

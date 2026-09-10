@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getDualCalendarInfo } from '../../utils/nepaliDate';
 import { Clock, Calendar as CalendarIcon } from 'lucide-react';
 

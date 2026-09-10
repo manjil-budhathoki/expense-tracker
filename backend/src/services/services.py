@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from src.models.model import ExpenseModel, CategoryModel
 from src.schemas.schema import ExpenseCreate, ExpenseUpdate, Optional, CategoryCreate, TransactionType, PaymentMethod
@@ -18,6 +19,8 @@ def _normalize_payment_method(value):
 
 def create_expense(db: Session, expense: ExpenseCreate):
     data = expense.model_dump()
+    if not db.get(CategoryModel, expense.category_id):
+        raise HTTPException(422, "Category does not exist")
     data["payment_method"] = _normalize_payment_method(data.get("payment_method"))
     db_expense = ExpenseModel(**data)
     db.add(db_expense)
@@ -42,6 +45,8 @@ def delete_category(db: Session, category_id: int):
     db_category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
     if not db_category:
         return None
+    if db.query(ExpenseModel).filter_by(category_id=category_id).first():
+        raise HTTPException(409, "Category is used by existing transactions")
     db.delete(db_category)
     db.commit()
     return db_category
@@ -64,11 +69,15 @@ def get_expenses(
         query = query.filter(ExpenseModel.type == type)
     if payment_method:
         query = query.filter(ExpenseModel.payment_method == payment_method)
-    if start_date and end_date:
-        query = query.filter(ExpenseModel.date.between(start_date, end_date))
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(422, "Start date must be before end date")
+    if start_date:
+        query = query.filter(ExpenseModel.date >= start_date)
+    if end_date:
+        query = query.filter(ExpenseModel.date <= end_date)
 
     total = query.count()
-    items = query.offset(skip).limit(limit).all()
+    items = query.order_by(ExpenseModel.date.desc(), ExpenseModel.id.desc()).offset(skip).limit(limit).all()
     return total, items
 
 def update_expense(db: Session, expense_id: int, expense: ExpenseUpdate):
@@ -76,6 +85,10 @@ def update_expense(db: Session, expense_id: int, expense: ExpenseUpdate):
     if not db_expense:
         return None
     updates = expense.model_dump(exclude_unset=True)
+    if any(value is None for key, value in updates.items() if key != "note"):
+        raise HTTPException(422, "Required fields cannot be null")
+    if "category_id" in updates and not db.get(CategoryModel, updates["category_id"]):
+        raise HTTPException(422, "Category does not exist")
     if "payment_method" in updates and isinstance(updates["payment_method"], PaymentMethod):
         updates["payment_method"] = updates["payment_method"].value
     for key, value in updates.items():
@@ -100,8 +113,12 @@ def get_summary(
     end_date: Optional[datetime.date] = None,
 ):
     query = db.query(ExpenseModel)
-    if start_date and end_date:
-        query = query.filter(ExpenseModel.date.between(start_date, end_date))
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(422, "Start date must be before end date")
+    if start_date:
+        query = query.filter(ExpenseModel.date >= start_date)
+    if end_date:
+        query = query.filter(ExpenseModel.date <= end_date)
 
     # Overall totals by type
     totals = (
@@ -155,8 +172,12 @@ def get_expenses_for_export(
     payment_method: Optional[PaymentMethod] = None,
 ):
     query = db.query(ExpenseModel).join(CategoryModel, ExpenseModel.category_id == CategoryModel.id)
-    if start_date and end_date:
-        query = query.filter(ExpenseModel.date.between(start_date, end_date))
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(422, "Start date must be before end date")
+    if start_date:
+        query = query.filter(ExpenseModel.date >= start_date)
+    if end_date:
+        query = query.filter(ExpenseModel.date <= end_date)
     if category_id:
         query = query.filter(ExpenseModel.category_id == category_id)
     if type:
