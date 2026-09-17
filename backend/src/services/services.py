@@ -17,12 +17,12 @@ def _normalize_payment_method(value):
     return value
 
 
-def create_expense(db: Session, expense: ExpenseCreate):
+def create_expense(db: Session, expense: ExpenseCreate, user_id: int):
     data = expense.model_dump()
     if not db.get(CategoryModel, expense.category_id):
         raise HTTPException(422, "Category does not exist")
     data["payment_method"] = _normalize_payment_method(data.get("payment_method"))
-    db_expense = ExpenseModel(**data)
+    db_expense = ExpenseModel(**data, created_by_id=user_id)
     db.add(db_expense)
     db.commit()
     db.refresh(db_expense)

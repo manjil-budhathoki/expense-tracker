@@ -4,6 +4,8 @@ from typing import Literal
 
 from src.core.database import get_db
 from src.services import import_service
+from src.api.v1.endpoints.auth import current_user
+from src.models.model import UserModel
 
 router = APIRouter(prefix="/import", tags=["import"])
 
@@ -14,9 +16,10 @@ def import_file(
     file_format: Literal["csv", "xlsx"] = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    user: UserModel = Depends(current_user),
 ):
     try:
-        record, created, errors = import_service.create_import(db, name, file, file_format)
+        record, created, errors = import_service.create_import(db, name, file, file_format, user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

@@ -7,7 +7,8 @@ from main import app
 from src.core.database import Base, get_db
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    monkeypatch.setenv('REGISTRATION_CODE', 'test-registration-code-123456')
     engine = create_engine('sqlite://', connect_args={'check_same_thread': False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     sessions = sessionmaker(bind=engine)
@@ -16,6 +17,11 @@ def client():
             yield db
     app.dependency_overrides[get_db] = override
     with TestClient(app) as client:
+        response = client.post('/v1/auth/register', json={
+            'name': 'Manjil', 'email': 'manjil@example.com', 'password': 'strong-password-123',
+            'registration_code': 'test-registration-code-123456'})
+        assert response.status_code == 200, response.text
+        client.headers['Authorization'] = f"Bearer {response.json()['token']}"
         yield client
     app.dependency_overrides.clear()
     engine.dispose()
@@ -27,6 +33,7 @@ def transaction(client, **overrides):
 
 def test_expense_crud_and_summary(client):
     expense = transaction(client).json()
+    assert expense['created_by_name'] == 'Manjil'
     saving = transaction(client, type='saving', amount=50).json()
     assert client.get('/v1/expenses/summary').json()['total_expense'] == 12.5
     assert client.get('/v1/expenses/summary').json()['total_saving'] == 50
@@ -34,6 +41,29 @@ def test_expense_crud_and_summary(client):
     assert client.get('/v1/expenses/').json()['items'][0]['id'] == saving['id']
     assert client.delete(f"/v1/expenses/{expense['id']}").status_code == 200
     assert client.get(f"/v1/expenses/{expense['id']}").status_code == 404
+
+def test_authentication_and_shared_attribution(client):
+    first = transaction(client).json()
+    assert client.post('/v1/auth/register', json={
+        'name': 'Intruder', 'email': 'bad@example.com', 'password': 'strong-password-123',
+        'registration_code': 'wrong-code'}).status_code == 403
+    second_account = client.post('/v1/auth/register', json={
+        'name': 'Second', 'email': 'second@example.com', 'password': 'another-password-123',
+        'registration_code': 'test-registration-code-123456'})
+    assert second_account.status_code == 200
+    first_token = client.headers['Authorization']
+    client.headers['Authorization'] = f"Bearer {second_account.json()['token']}"
+    assert client.get('/v1/expenses/').json()['items'][0]['created_by_name'] == 'Manjil'
+    second = transaction(client).json()
+    assert second['created_by_name'] == 'Second'
+    assert client.get('/v1/expenses/').json()['total'] == 2
+    assert client.post('/v1/auth/logout').status_code == 204
+    assert client.get('/v1/expenses/').status_code == 401
+    client.headers.pop('Authorization')
+    for path in ['/v1/expenses/', '/v1/finance/', '/v1/categories/', '/v1/import/', '/v1/export?type=csv']:
+        assert client.get(path).status_code == 401
+    client.headers['Authorization'] = first_token
+    assert client.get('/v1/expenses/').status_code == 200
 
 @pytest.mark.parametrize('changes', [{'amount':0},{'amount':-1},{'category_id':999},{'payment_method':'invalid'},{'date':'bad'}])
 def test_invalid_expenses(client, changes):

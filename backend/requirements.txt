@@ -10,3 +10,4 @@ reportlab
 alembic
 httpx
 pytest
+email-validator

@@ -47,6 +47,8 @@ class ExpenseUpdate(BaseModel):
 
 class Expense(ExpenseBase):
     id: int
+    created_by_id: Optional[int] = None
+    created_by_name: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class PaginatedExpenses(BaseModel):

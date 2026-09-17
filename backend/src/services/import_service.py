@@ -25,7 +25,7 @@ def _get_or_create_category(db: Session, name: str) -> int:
     return category.id
 
 
-def _parse_row(db: Session, row: dict):
+def _parse_row(db: Session, row: dict, user_id: int):
     return ExpenseModel(
         date=datetime.date.fromisoformat(str(row["Date"])),
         category_id=_get_or_create_category(db, row["Category"]),
@@ -33,6 +33,7 @@ def _parse_row(db: Session, row: dict):
         payment_method=_resolve_payment_method(row["Payment Method"]).value,
         amount=float(row["Amount"]),
         note=row.get("Note") or None,
+        created_by_id=user_id,
     )
 
 
@@ -54,7 +55,9 @@ def _parse_xlsx_rows(file_bytes: bytes):
     return rows
 
 
-def create_import(db: Session, name: str, file, file_format: str):
+def create_import(db: Session, name: str, file, file_format: str, user_id: int):
+    if not name or len(name) > 100 or not all(c.isalnum() or c in "-_" for c in name):
+        raise ValueError("Import name may contain only letters, numbers, hyphens and underscores")
     existing = db.query(ImportFileModel).filter(ImportFileModel.name == name).first()
     if existing:
         raise ValueError(f"An import named '{name}' already exists.")
@@ -72,7 +75,7 @@ def create_import(db: Session, name: str, file, file_format: str):
     created, errors = [], []
     for i, row in enumerate(raw_rows, start=2):  # row 1 is header
         try:
-            expense = _parse_row(db, row)
+            expense = _parse_row(db, row, user_id)
             db.add(expense)
             created.append(expense)
         except Exception as e:

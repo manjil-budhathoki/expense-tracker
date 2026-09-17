@@ -30,6 +30,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/expense_tracker_db
       - PYTHONUNBUFFERED=1
+      - REGISTRATION_CODE=${REGISTRATION_CODE:?Set REGISTRATION_CODE in the root .env file}
     depends_on:
       db:
         condition: service_healthy

@@ -4,13 +4,15 @@ import datetime
 from src.core.database import get_db
 from src.schemas.schema import Expense, ExpenseCreate, ExpenseUpdate, TransactionType, PaymentMethod, PaginatedExpenses, SummaryResponse
 from src.services import services
+from src.api.v1.endpoints.auth import current_user
+from src.models.model import UserModel
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
 
 
 @router.post("/", response_model=Expense)
-def create_expense(expense: ExpenseCreate, db: Session = Depends(get_db)):
-    return services.create_expense(db, expense)
+def create_expense(expense: ExpenseCreate, db: Session = Depends(get_db), user: UserModel = Depends(current_user)):
+    return services.create_expense(db, expense, user.id)
 
 
 @router.get("/", response_model=PaginatedExpenses)

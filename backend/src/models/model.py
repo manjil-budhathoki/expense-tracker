@@ -27,8 +27,28 @@ class ExpenseModel(Base):
     )
     note = Column(String, nullable=True)
     date = Column(Date, nullable=False)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     category = relationship("CategoryModel")
+    creator = relationship("UserModel")
+
+    @property
+    def created_by_name(self):
+        return self.creator.name if self.creator else None
+
+class UserModel(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+
+class SessionModel(Base):
+    __tablename__ = "sessions"
+    token_hash = Column(String(64), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    user = relationship("UserModel")
 
 class ExportFileModel(Base):
     __tablename__ = "export_files"
